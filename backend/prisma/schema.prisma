@@ -27,3 +27,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  price       Float
+  size        String   // Ex: P, M, G, GG. Você pode criar um Enum Prisma para isso se quiser mais rigor.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

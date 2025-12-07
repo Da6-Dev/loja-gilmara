@@ -1,4 +1,4 @@
-import { Product } from '../types/product';
+import type { Product } from '../types/product'; // CORREÇÃO 1: 'import type'
 
 // Assumindo que você tem uma função para obter o token de autenticação
 const getAuthHeaders = () => ({
@@ -12,9 +12,18 @@ const BASE_URL = 'http://localhost:3000/products'; // Porta padrão NestJS
 export const ProductApi = {
   // READ ALL
   getProducts: async (): Promise<Product[]> => {
-    const response = await fetch(BASE_URL, { headers: getAuthHeaders() });
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return response.json();
+    try {
+      const response = await fetch(BASE_URL, { headers: getAuthHeaders() });
+      if (!response.ok) throw new Error('Failed to fetch products');
+      
+      const data = await response.json();
+      
+      // CORREÇÃO 2: Garante que o retorno é um array. Se não for, retorna [].
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Erro ao buscar produtos:", error);
+      return []; // Retorna lista vazia em caso de erro para não quebrar o front
+    }
   },
 
   // CREATE

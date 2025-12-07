@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       alert(`Bem-vindo, ${data.user.name}!`);
-      window.location.href = "/dashboard";
+      navigate('/dashboard');
     } catch (err) {
       // Correção: Verificamos o tipo do erro
       if (err instanceof Error) {

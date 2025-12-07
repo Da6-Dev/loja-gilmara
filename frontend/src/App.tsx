@@ -1,46 +1,22 @@
-// frontend/src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import { ProtectedRoute } from './components/ProtectedRoute';
-
-// Importe a tela real de Dashboard para o ADMIN
-import ProductDashboard from './pages/ProductDashboard'; 
-// Use TesteRotaSegura como a Dashboard de USER
-import UserDashboard from './pages/TesteRotaSegura'; 
+import Login from './pages/Login'; // Verifique se o caminho do seu Login está correto
+import ProductDashboard from './pages/ProductDashboard';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Rota raiz: Se não estiver logado, mostra Login */}
+        <Route path="/" element={<Login />} />
         
-        {/* Rotas Públicas */}
+        {/* Rota de Login explícita */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
-        {/* 🆕 Rota Protegida para usuários comuns (Exemplo) */}
-        <Route 
-          path="/user/dashboard" 
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          } 
-        />
-        
-        {/* 🆕 Rota Protegida para ADMIN (Gestão de Produtos) */}
-        <Route 
-          path="/admin/products" 
-          element={
-            // Exige a role 'ADMIN' para acessar o CRUD de produtos
-            <ProtectedRoute roleRequired="ADMIN">
-              <ProductDashboard /> 
-            </ProtectedRoute>
-          } 
-        />
+        {/* AQUI ESTÁ A CORREÇÃO: Definindo a rota do Dashboard */}
+        <Route path="/dashboard" element={<ProductDashboard />} />
 
-        <Route path="*" element={<div className="text-center mt-10">Página não encontrada (404)</div>} />
+        {/* Rota Curinga: Se o usuário digitar algo que não existe, volta para o Login */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

@@ -37,9 +37,12 @@ export class ProductsService {
   // UPDATE
   async update(id: number, updateProductDto: UpdateProductDto) {
     const product = await this.findOne(id); // Reutiliza findOne para checar existência
-    
+
     // O método merge combina a entidade existente com os dados de atualização
-    const updatedProduct = this.productsRepository.merge(product, updateProductDto);
+    const updatedProduct = this.productsRepository.merge(
+      product,
+      updateProductDto,
+    );
     return this.productsRepository.save(updatedProduct);
   }
 

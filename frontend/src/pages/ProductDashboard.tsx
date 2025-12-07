@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { ProductApi } from '../api/products'; // Assumindo que você criou o products.ts
-import { Product } from '../types/product';   // Assumindo que você criou o product.ts
-import ProductForm from '../components/ProductForm'; // Novo import
+import { ProductApi } from '../api/products'; 
+import type { Product } from '../types/product'; // CORREÇÃO 1: 'import type'
+import ProductForm from '../components/ProductForm'; 
 
 // Componente simples para reutilizar o botão
-const Button = ({ children, className = '', ...props }) => (
+const Button = ({ children, className = '', ...props }: any) => (
   <button
     className={`px-4 py-2 rounded-lg font-semibold ${className}`}
     {...props}
@@ -14,11 +14,12 @@ const Button = ({ children, className = '', ...props }) => (
 );
 
 const ProductDashboard = () => {
+  // Inicializa com array vazio para evitar undefined
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🆕 ESTADOS PARA O MODAL
+  // ESTADOS PARA O MODAL
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(undefined);
 
@@ -29,19 +30,30 @@ const ProductDashboard = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      // NOTE: Em um projeto real, 'getProducts' deve incluir o JWT para autenticação/autorização
       const data = await ProductApi.getProducts();
-      setProducts(data);
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        setProducts([]);
+      }
+      // CORREÇÃO 2: Verificação defensiva antes de atualizar o estado
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        console.warn("API não retornou uma lista:", data);
+        setProducts([]);
+      }
       setError(null);
     } catch (e) {
       setError('Erro ao carregar produtos. Verifique a autenticação e o backend.');
       console.error('API Error:', e);
+      setProducts([]); // Garante estado seguro em caso de erro crítico
     } finally {
       setLoading(false);
     }
   };
 
-  // 🆕 FUNÇÕES DE CONTROLE DO MODAL
+  // FUNÇÕES DE CONTROLE DO MODAL
   const handleAdd = () => {
     setSelectedProduct(undefined); // Modo de Criação (sem dados iniciais)
     setIsModalOpen(true);
@@ -75,8 +87,6 @@ const ProductDashboard = () => {
     }
   };
 
-  if (loading && products.length === 0) return <div className="text-center p-8 text-xl text-gray-500">Carregando produtos...</div>;
-
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
@@ -88,7 +98,7 @@ const ProductDashboard = () => {
 
       {error && <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-lg">{error}</div>}
 
-      {/* Tabela de Produtos (Classes Tailwind) */}
+      {/* Tabela de Produtos */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -101,38 +111,42 @@ const ProductDashboard = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap truncate max-w-xs text-sm text-gray-500">{product.description || 'N/A'}</td>
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">R$ {product.price.toFixed(2)}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                  <Button
-                    onClick={() => handleEdit(product)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs"
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(product.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs"
-                  >
-                    Excluir
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && !loading && (
-                <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500">Nenhum produto encontrado.</td>
+            {/* CORREÇÃO 3: Uso de Optional Chaining (products?.map) */}
+            {products?.length > 0 ? (
+              products.map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap truncate max-w-xs text-sm text-gray-500">{product.description || 'N/A'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">R$ {Number(product.price).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <Button
+                      onClick={() => handleEdit(product)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-xs"
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete(product.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs"
+                    >
+                      Excluir
+                    </Button>
+                  </td>
                 </tr>
+              ))
+            ) : (
+              <tr>
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                    {loading ? 'Carregando...' : 'Nenhum produto encontrado.'}
+                  </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* 🆕 Renderização Condicional do Modal */}
+      {/* Renderização Condicional do Modal */}
       {isModalOpen && (
         <ProductForm 
           initialData={selectedProduct} // Passa os dados do produto (undefined para criação)

@@ -38,6 +38,7 @@ export class AuthService {
     });
 
     // Remove a senha do objeto retornado
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = user;
     return result;
   }

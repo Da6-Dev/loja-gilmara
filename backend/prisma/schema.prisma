@@ -13,11 +13,17 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String?
   password  String
+  role      Role     @default(USER) // <--- Novo campo com padrão USER
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

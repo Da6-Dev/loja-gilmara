@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, Min, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  Min,
+  IsNotEmpty,
+  IsArray,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -17,9 +24,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   size: string;
 
-
-// NOVO CAMPO: O Controller irá preencher este campo após o upload
-  @IsString()
-  @IsNotEmpty({ message: 'O URL da imagem é obrigatório (Erro de backend)' })
-  imageUrl: string;
+  // ALTERADO: Validação de array de strings
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls: string[];
 }

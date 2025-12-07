@@ -18,9 +18,9 @@ const productSchema = z.object({
   ),
   size: z.string().min(1, 'O tamanho é obrigatório.'),
   // Campo de arquivo (obrigatório para criação)
-  file: z
+  files: z
     .instanceof(FileList)
-    .refine((files) => files.length > 0, 'A imagem é obrigatória.'),
+    .refine((files) => files.length > 0, 'Selecione pelo menos uma imagem.'),
 });
 
 // 2. Schema de Edição (Usado para Edição)
@@ -54,7 +54,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess, onClo
     formState: { errors, isSubmitting },
   } = useForm<ProductFormData>({
     // Resolve o schema dinamicamente
-    resolver: zodResolver(usedSchema as any), 
+    resolver: zodResolver(usedSchema as any),
     defaultValues: isEditing ? {
       name: initialData.name,
       description: initialData.description,
@@ -71,41 +71,28 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess, onClo
 
   const onSubmit = async (data: ProductFormData) => {
     try {
-      if (isEditing && initialData) {
-        // --- Lógica de Edição ---
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('description', data.description || '');
+      formData.append('price', String(data.price));
+      formData.append('size', data.size);
 
-        // Se uma imagem foi selecionada, o backend atual não suporta PATCH multipart.
-        if (data.file && data.file.length > 0) {
-            alert('Aviso: A troca de imagem na edição não está implementada via PATCH. Apenas campos de texto serão enviados.');
+      // Loop para adicionar todos os arquivos selecionados ao campo 'files'
+      if (data.files && data.files.length > 0) {
+        for (let i = 0; i < data.files.length; i++) {
+          formData.append('files', data.files[i]);
         }
-        
-        // Remove o campo 'file' antes de enviar o JSON para o PATCH
-        const { file, ...updateData } = data;
-        await ProductApi.updateProduct(initialData.id, updateData as Partial<Product>);
-        
+      }
+
+      if (isEditing && initialData) {
+        await ProductApi.updateProduct(initialData.id, formData);
       } else {
-        // --- Lógica de Criação (ENVIANDO FormData) ---
-        const formData = new FormData();
-        
-        // Anexa os campos de texto/número
-        formData.append('name', data.name);
-        formData.append('description', data.description || '');
-        // Garante que preço e tamanho sejam strings para o FormData
-        formData.append('price', String(data.price)); 
-        formData.append('size', data.size);
-        
-        // Anexa o arquivo (o backend espera o campo 'file')
-        if (data.file && data.file[0]) {
-            formData.append('file', data.file[0]);
-        }
-        
         await ProductApi.createProduct(formData);
       }
-      onSuccess(); // Fecha o modal e atualiza a lista
-    } catch (error) {
+      onSuccess();
+    } catch (error: any) {
       console.error('Erro ao salvar:', error);
-      // Inclui a mensagem de erro da API para o usuário
-      alert(`Erro ao salvar produto. Detalhes: ${error.message || 'Verifique o log do console.'}`);
+      alert(`Erro ao salvar produto. Detalhes: ${error.message || 'Verifique o console.'}`);
     }
   };
 
@@ -117,7 +104,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess, onClo
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">{title}</h2>
         {/* Não é necessário encType="multipart/form-data" com handleSubmit, mas não é um erro */}
-        <form onSubmit={handleSubmit(onSubmit)}> 
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome</label>
             <input type="text" id="name" {...register('name')} className={commonInputClasses} />
@@ -132,12 +119,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess, onClo
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-gray-700">Preço (R$)</label>
-              <input 
-                type="number" 
-                step="0.01" 
-                id="price" 
-                {...register('price')} 
-                className={commonInputClasses} 
+              <input
+                type="number"
+                step="0.01"
+                id="price"
+                {...register('price')}
+                className={commonInputClasses}
               />
               {errors.price && <p className={errorTextClasses}>{errors.price.message}</p>}
             </div>
@@ -155,17 +142,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSuccess, onClo
 
           {/* NOVO CAMPO DE UPLOAD */}
           <div className="mb-6">
-            <label htmlFor="file" className="block text-sm font-medium text-gray-700">
-              Imagem do Produto {isEditing ? '(Opcional para edição)' : '*'}
+            <label htmlFor="files" className="block text-sm font-medium text-gray-700">
+              Imagens do Produto (Selecione várias)
             </label>
             <input 
               type="file" 
-              id="file" 
-              {...register('file')} 
-              className={`${commonInputClasses} file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100`}
+              id="files" 
+              multiple // <--- IMPORTANTE: Permite seleção múltipla
+              {...register('files')} // Note que o nome no register agora é 'files' para bater com o schema
+              className="..."
             />
-            {/* Exibe o erro de validação (se a imagem for obrigatória na criação e estiver faltando) */}
-            {errors.file && <p className={errorTextClasses}>{errors.file.message}</p>}
+            {errors.files && <p className={errorTextClasses}>{errors.files.message}</p>}
           </div>
 
           <div className="flex justify-end space-x-3">

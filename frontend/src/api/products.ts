@@ -38,7 +38,7 @@ export const ProductApi = {
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: formData, // Envia o FormData diretamente, incluindo o arquivo
+      body: formData,
     });
     if (!response.ok) {
         // Tenta ler o erro do backend se o status for 4xx ou 5xx
@@ -49,14 +49,23 @@ export const ProductApi = {
   },
 
   // UPDATE (Usa headers JSON)
-  updateProduct: async (id: number, data: Partial<Product>): Promise<Product> => {
-    // Usa getJsonHeaders (pois espera JSON)
+  updateProduct: async (id: number, data: FormData | Partial<Product>): Promise<Product> => {
+    const isFormData = data instanceof FormData;
+    
+    // Se for FormData, usa headers normais (browser define boundary). Se for JSON, usa Content-Type json.
+    const headers = isFormData ? getAuthHeaders() : getJsonHeaders();
+    const body = isFormData ? data : JSON.stringify(data);
+
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: 'PATCH',
-      headers: getJsonHeaders(), 
-      body: JSON.stringify(data),
+      headers, 
+      body,
     });
-    if (!response.ok) throw new Error('Failed to update product');
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({ message: 'Failed to update product' }));
+        throw new Error(err.message || 'Failed to update product');
+    }
     return response.json();
   },
 

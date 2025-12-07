@@ -13,7 +13,7 @@ import { SupabaseModule } from './supabase/supabase.module'; // Importa o novo m
   imports: [
     // CORREÇÃO 1: Adiciona isGlobal: true para que ConfigService funcione em qualquer lugar
     ConfigModule.forRoot({
-        isGlobal: true, 
+      isGlobal: true,
     }),
 
     // Configuração do Banco de Dados
@@ -27,7 +27,7 @@ import { SupabaseModule } from './supabase/supabase.module'; // Importa o novo m
 
     // CORREÇÃO 2: Adiciona o módulo Supabase
     SupabaseModule,
-    
+
     AuthModule,
     ProductsModule,
   ],

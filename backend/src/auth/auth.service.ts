@@ -36,7 +36,7 @@ export class AuthService {
       name: data.name,
       email: data.email,
       password: hashedPassword,
-      role: Role.USER, // Usa o Enum explicitamente para evitar erro de tipo
+      role: Role.USER, // <--- MUDE DE Role.USER PARA Role.ADMIN TEMPORARIAMENTE
     });
 
     // Salva no banco. O método save retorna a entidade completa (User)

@@ -20,19 +20,16 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price: number;
 
-  // Assumindo que size é uma string (ex: 'P', 'M', 'G', 'GG')
   @Column({ length: 10 })
   size: string;
 
-  // NOVO CAMPO: URL da Imagem (não pode ser nulo se for obrigatório na criação)
-  @Column({ nullable: true}) 
-  imageUrl: string; 
-  // Removida a duplicação do imageUrl daqui
+  // ALTERADO: De string única para array de strings
+  @Column('text', { array: true, nullable: true })
+  imageUrls: string[];
 
   @CreateDateColumn()
-  createdAt: Date; // Primeira declaração
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date; // Primeira declaração
+  updatedAt: Date;
 }
-// Removidas as declarações duplicadas de createdAt e updatedAt que causavam o erro TS2300

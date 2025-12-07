@@ -1,14 +1,23 @@
 // backend/products/products.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
-import { RolesGuard } from '../auth/roles/roles.guard';
-import { Roles } from '../auth/roles/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum'; // Importe o enum Role
 import { AuthGuard } from '@nestjs/passport'; // Importe o AuthGuard do Passport
 
-// Protege todas as rotas deste controller com o JWT Guard e o RolesGuard.
 @UseGuards(AuthGuard('jwt'), RolesGuard) // <-- Descomentado/Adicionado
-@Roles('ADMIN') 
+@Roles(Role.ADMIN)
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}

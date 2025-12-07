@@ -5,8 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/user.entity';
-import { ProductsModule } from '../products/products.module'; // Importar ProductsModule
-import { Product } from '../products/entities/product.entity'; // Importar Product Entity
+import { ProductsModule } from './products/products.module'; // Importar ProductsModule
+import { Product } from './products/entities/product.entity'; // Importar Product Entity
 
 @Module({
   imports: [

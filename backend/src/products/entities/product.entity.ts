@@ -24,9 +24,15 @@ export class Product {
   @Column({ length: 10 })
   size: string;
 
+  // NOVO CAMPO: URL da Imagem (não pode ser nulo se for obrigatório na criação)
+  @Column({ nullable: true}) 
+  imageUrl: string; 
+  // Removida a duplicação do imageUrl daqui
+
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date; // Primeira declaração
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt: Date; // Primeira declaração
 }
+// Removidas as declarações duplicadas de createdAt e updatedAt que causavam o erro TS2300

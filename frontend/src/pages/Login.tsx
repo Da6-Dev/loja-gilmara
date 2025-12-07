@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -29,7 +30,8 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       alert(`Bem-vindo, ${data.user.name}!`);
-      navigate('/dashboard');
+      // CORREÇÃO: Redireciona para a página inicial acessível a todos
+      navigate('/home');
     } catch (err) {
       // Correção: Verificamos o tipo do erro
       if (err instanceof Error) {

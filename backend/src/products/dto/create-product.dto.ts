@@ -16,4 +16,10 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   size: string;
+
+
+// NOVO CAMPO: O Controller irá preencher este campo após o upload
+  @IsString()
+  @IsNotEmpty({ message: 'O URL da imagem é obrigatório (Erro de backend)' })
+  imageUrl: string;
 }

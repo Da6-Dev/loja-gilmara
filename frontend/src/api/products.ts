@@ -1,24 +1,30 @@
-import type { Product } from '../types/product'; // CORREÇÃO 1: 'import type'
+import type { Product } from '../types/product';
 
-// Assumindo que você tem uma função para obter o token de autenticação
+// Headers sem Content-Type para ser usado com FormData (upload de arquivo)
 const getAuthHeaders = () => ({
   // Alterado de 'access_token' para 'token'
   Authorization: `Bearer ${localStorage.getItem('token')}`,
-  'Content-Type': 'application/json',
+});
+
+// Headers com Content-Type explícito para operações JSON (READ/PATCH/DELETE)
+const getJsonHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json',
 });
 
 const BASE_URL = 'http://localhost:3000/products'; // Porta padrão NestJS
 
 export const ProductApi = {
-  // READ ALL
+  // READ ALL (Usa headers JSON)
   getProducts: async (): Promise<Product[]> => {
     try {
-      const response = await fetch(BASE_URL, { headers: getAuthHeaders() });
+      // Usa getJsonHeaders (pois espera JSON)
+      const response = await fetch(BASE_URL, { headers: getJsonHeaders() }); 
       if (!response.ok) throw new Error('Failed to fetch products');
       
       const data = await response.json();
       
-      // CORREÇÃO 2: Garante que o retorno é um array. Se não for, retorna [].
+      // Garante que o retorno é um array. Se não for, retorna [].
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
@@ -26,33 +32,40 @@ export const ProductApi = {
     }
   },
 
-  // CREATE
-  createProduct: async (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> => {
+  // CREATE (ALTERADO: Agora aceita FormData que inclui o arquivo)
+  createProduct: async (formData: FormData): Promise<Product> => {
+    // Usa getAuthHeaders (sem Content-Type) e envia FormData
     const response = await fetch(BASE_URL, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: formData, // Envia o FormData diretamente, incluindo o arquivo
     });
-    if (!response.ok) throw new Error('Failed to create product');
+    if (!response.ok) {
+        // Tenta ler o erro do backend se o status for 4xx ou 5xx
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create product (No JSON error response)' }));
+        throw new Error(errorData.message || 'Failed to create product');
+    }
     return response.json();
   },
 
-  // UPDATE
+  // UPDATE (Usa headers JSON)
   updateProduct: async (id: number, data: Partial<Product>): Promise<Product> => {
+    // Usa getJsonHeaders (pois espera JSON)
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: 'PATCH',
-      headers: getAuthHeaders(),
+      headers: getJsonHeaders(), 
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error('Failed to update product');
     return response.json();
   },
 
-  // DELETE
+  // DELETE (Usa headers JSON)
   deleteProduct: async (id: number): Promise<void> => {
+    // Usa getJsonHeaders (pois espera JSON)
     const response = await fetch(`${BASE_URL}/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers: getJsonHeaders(),
     });
     if (!response.ok) throw new Error('Failed to delete product');
   },

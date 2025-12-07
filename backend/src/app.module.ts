@@ -5,25 +5,31 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/user.entity';
-import { ProductsModule } from './products/products.module'; // Importar ProductsModule
-import { Product } from './products/entities/product.entity'; // Importar Product Entity
+import { ProductsModule } from './products/products.module';
+import { Product } from './products/entities/product.entity';
+import { SupabaseModule } from './supabase/supabase.module'; // Importa o novo módulo Supabase
 
 @Module({
   imports: [
-    // Carrega as variáveis de ambiente
-    ConfigModule.forRoot(),
+    // CORREÇÃO 1: Adiciona isGlobal: true para que ConfigService funcione em qualquer lugar
+    ConfigModule.forRoot({
+        isGlobal: true, 
+    }),
 
     // Configuração do Banco de Dados
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      entities: [User, Product], // Adiciona Product às tabelas
+      entities: [User, Product],
       synchronize: true,
       autoLoadEntities: true,
     }),
 
+    // CORREÇÃO 2: Adiciona o módulo Supabase
+    SupabaseModule,
+    
     AuthModule,
-    ProductsModule, // Adiciona ProductsModule
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

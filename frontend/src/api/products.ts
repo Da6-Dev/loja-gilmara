@@ -1,6 +1,9 @@
+import { Product } from '../types/product';
+
 // Assumindo que você tem uma função para obter o token de autenticação
 const getAuthHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  // Alterado de 'access_token' para 'token'
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
   'Content-Type': 'application/json',
 });
 

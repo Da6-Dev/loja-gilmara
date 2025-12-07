@@ -1,31 +1,45 @@
+// frontend/src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/TesteRotaSegura';
 import { ProtectedRoute } from './components/ProtectedRoute';
+
+// Importe a tela real de Dashboard para o ADMIN
+import ProductDashboard from './pages/ProductDashboard'; 
+// Use TesteRotaSegura como a Dashboard de USER
+import UserDashboard from './pages/TesteRotaSegura'; 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rota padrão redireciona para login */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         
         {/* Rotas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Rotas Protegidas */}
+        {/* 🆕 Rota Protegida para usuários comuns (Exemplo) */}
         <Route 
-          path="/dashboard" 
+          path="/user/dashboard" 
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <UserDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* 🆕 Rota Protegida para ADMIN (Gestão de Produtos) */}
+        <Route 
+          path="/admin/products" 
+          element={
+            // Exige a role 'ADMIN' para acessar o CRUD de produtos
+            <ProtectedRoute roleRequired="ADMIN">
+              <ProductDashboard /> 
             </ProtectedRoute>
           } 
         />
 
-        {/* Rota para páginas não encontradas */}
         <Route path="*" element={<div className="text-center mt-10">Página não encontrada (404)</div>} />
       </Routes>
     </BrowserRouter>

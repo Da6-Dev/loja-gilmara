@@ -1,37 +1,54 @@
-// Exemplo de ProductsService
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateProductDto, UpdateProductDto } from './dto';
-import { PrismaClient } from '../generated/prisma'; // Importe o Prisma Client
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
-  private prisma = new PrismaClient(); // Em um projeto real, use um PrismaService injetável
+  constructor(
+    // Injeta o repositório TypeOrm para a entidade Product
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
+  ) {}
 
   // READ ALL
   findAll() {
-    return this.prisma.product.findMany();
+    return this.productsRepository.find();
   }
 
   // READ ONE
-  findOne(id: number) {
-    return this.prisma.product.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const product = await this.productsRepository.findOneBy({ id });
+
+    if (!product) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
+
+    return product;
   }
 
   // CREATE
   create(createProductDto: CreateProductDto) {
-    return this.prisma.product.create({ data: createProductDto });
+    const newProduct = this.productsRepository.create(createProductDto);
+    return this.productsRepository.save(newProduct);
   }
 
   // UPDATE
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return this.prisma.product.update({
-      where: { id },
-      data: updateProductDto,
-    });
+  async update(id: number, updateProductDto: UpdateProductDto) {
+    const product = await this.findOne(id); // Reutiliza findOne para checar existência
+    
+    // O método merge combina a entidade existente com os dados de atualização
+    const updatedProduct = this.productsRepository.merge(product, updateProductDto);
+    return this.productsRepository.save(updatedProduct);
   }
 
   // DELETE
-  remove(id: number) {
-    return this.prisma.product.delete({ where: { id } });
+  async remove(id: number) {
+    const result = await this.productsRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Produto com ID ${id} não encontrado`);
+    }
   }
 }

@@ -1,13 +1,14 @@
+// backend/products/products.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto, UpdateProductDto } from './dto';
-import { RolesGuard } from '../auth/roles/roles.guard'; //
-import { Roles } from '../auth/roles/roles.decorator'; //
+import { RolesGuard } from '../auth/roles/roles.guard';
+import { Roles } from '../auth/roles/roles.decorator';
+import { AuthGuard } from '@nestjs/passport'; // Importe o AuthGuard do Passport
 
-// Protege todas as rotas deste controller com o JWT Guard (que você deve implementar)
-// e o RolesGuard para restringir o acesso apenas a administradores.
-@UseGuards(/* AuthGuard('jwt') ,*/ RolesGuard)
-@Roles('ADMIN') // O enum Role no Prisma tem o valor ADMIN
+// Protege todas as rotas deste controller com o JWT Guard e o RolesGuard.
+@UseGuards(AuthGuard('jwt'), RolesGuard) // <-- Descomentado/Adicionado
+@Roles('ADMIN') 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
